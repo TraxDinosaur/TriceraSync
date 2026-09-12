@@ -1,0 +1,11 @@
+# Showcase repo: README, screenshots and the signed demo APK only.
+.DS_Store
+Thumbs.db
+*.log
+
+# Never publish credentials or build scratch here
+.env
+.env.*
+*.keystore
+*.jks
+keystore.properties
