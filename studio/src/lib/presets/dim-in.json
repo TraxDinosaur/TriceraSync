@@ -1,0 +1,13 @@
+{
+  "id": "dim-in",
+  "name": "Dim in",
+  "description": "Screen fades to 15 % over half a second and holds for 4 s.",
+  "cues": [
+    {
+      "offsetMs": 0,
+      "type": "brightness",
+      "durationMs": 4000,
+      "params": { "level": 0.15, "rampMs": 500 }
+    }
+  ]
+}

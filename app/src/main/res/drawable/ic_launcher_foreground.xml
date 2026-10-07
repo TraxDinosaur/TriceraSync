@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TriceraSync mark: three triceratops horns swept into a play triangle.
+  Same 48x48 grid as the web favicon, scaled ×1.9 and offset 8.4 so it sits inside the
+  adaptive-icon safe zone and no launcher mask clips it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path android:pathData="M23.6,25.5 Q40.7,25.5 57.8,42.6 Q40.7,36.9 23.6,36.9 Z M23.6,47.35 Q54.95,47.35 86.3,54 Q54.95,60.65 23.6,60.65 Z M23.6,71.1 Q40.7,71.1 57.8,65.4 Q40.7,82.5 23.6,82.5 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="23.6"
+                android:startY="27.4"
+                android:endX="84.4"
+                android:endY="80.6">
+                <item android:offset="0" android:color="#FFFFB020" />
+                <item android:offset="1" android:color="#FFFF4D1F" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

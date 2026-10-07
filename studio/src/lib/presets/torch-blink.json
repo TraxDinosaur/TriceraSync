@@ -1,0 +1,9 @@
+{
+  "id": "torch-blink",
+  "name": "Torch blink",
+  "description": "Two quick torch pulses.",
+  "cues": [
+    { "offsetMs": 0, "type": "torch", "params": { "on": true, "durationMs": 100, "strength": 1 } },
+    { "offsetMs": 250, "type": "torch", "params": { "on": true, "durationMs": 100, "strength": 1 } }
+  ]
+}

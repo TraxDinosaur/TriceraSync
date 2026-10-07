@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Themed-icon (Android 13+) layer. The launcher applies its own tint and only uses the alpha,
+  so the three horns are drawn flat white.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M23.6,25.5 Q40.7,25.5 57.8,42.6 Q40.7,36.9 23.6,36.9 Z M23.6,47.35 Q54.95,47.35 86.3,54 Q54.95,60.65 23.6,60.65 Z M23.6,71.1 Q40.7,71.1 57.8,65.4 Q40.7,82.5 23.6,82.5 Z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

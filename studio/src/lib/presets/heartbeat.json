@@ -1,0 +1,37 @@
+{
+  "id": "heartbeat",
+  "name": "Heartbeat ×3",
+  "description": "Three double-thumps, 900 ms apart.",
+  "cues": [
+    {
+      "offsetMs": 0,
+      "type": "vibrate",
+      "params": {
+        "mode": "waveform",
+        "timings": [0, 80, 90, 110],
+        "amplitudes": [0, 200, 0, 255],
+        "repeat": -1
+      }
+    },
+    {
+      "offsetMs": 900,
+      "type": "vibrate",
+      "params": {
+        "mode": "waveform",
+        "timings": [0, 80, 90, 110],
+        "amplitudes": [0, 200, 0, 255],
+        "repeat": -1
+      }
+    },
+    {
+      "offsetMs": 1800,
+      "type": "vibrate",
+      "params": {
+        "mode": "waveform",
+        "timings": [0, 80, 90, 110],
+        "amplitudes": [0, 200, 0, 255],
+        "repeat": -1
+      }
+    }
+  ]
+}

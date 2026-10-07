@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "video": {
+    "provider": "youtube",
+    "id": "dQw4w9WgXcQ",
+    "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+    "channel": "Rick Astley",
+    "durationMs": 213000
+  },
+  "meta": {
+    "sheetVersion": 1,
+    "createdAt": "2026-09-11T00:00:00.000Z",
+    "fps": 30
+  },
+  "defaults": {
+    "restoreOnEnd": true,
+    "toleranceMs": 120
+  },
+  "cues": [
+    {
+      "id": "c_intro",
+      "at": 1000,
+      "type": "vibrate",
+      "params": {
+        "mode": "predefined",
+        "effect": "HEAVY_CLICK"
+      }
+    },
+    {
+      "id": "c_dim",
+      "at": 3000,
+      "type": "brightness",
+      "durationMs": 3000,
+      "params": {
+        "level": 0.15,
+        "rampMs": 500
+      }
+    },
+    {
+      "id": "c_beat1",
+      "at": 7000,
+      "type": "vibrate",
+      "params": {
+        "mode": "waveform",
+        "timings": [
+          0,
+          80,
+          90,
+          110
+        ],
+        "amplitudes": [
+          0,
+          200,
+          0,
+          255
+        ],
+        "repeat": -1
+      }
+    },
+    {
+      "id": "c_beat2",
+      "at": 7900,
+      "type": "vibrate",
+      "params": {
+        "mode": "waveform",
+        "timings": [
+          0,
+          80,
+          90,
+          110
+        ],
+        "amplitudes": [
+          0,
+          200,
+          0,
+          255
+        ],
+        "repeat": -1
+      }
+    },
+    {
+      "id": "c_flash",
+      "at": 10000,
+      "type": "flash",
+      "params": {
+        "color": "#FF3B00",
+        "opacity": 0.7,
+        "durationMs": 120,
+        "fadeOutMs": 260
+      }
+    },
+    {
+      "id": "c_boom",
+      "at": 10000,
+      "type": "vibrate",
+      "params": {
+        "mode": "oneShot",
+        "durationMs": 400,
+        "amplitude": 255
+      }
+    },
+    {
+      "id": "c_quiet",
+      "at": 15000,
+      "type": "volume",
+      "params": {
+        "level": 0.3,
+        "rampMs": 300
+      }
+    },
+    {
+      "id": "c_loud",
+      "at": 20000,
+      "type": "volume",
+      "params": {
+        "level": 1,
+        "rampMs": 300
+      }
+    },
+    {
+      "id": "c_torch",
+      "at": 25000,
+      "type": "torch",
+      "params": {
+        "on": true,
+        "durationMs": 150,
+        "strength": 1
+      }
+    }
+  ]
+}

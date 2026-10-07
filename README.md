@@ -4,11 +4,11 @@
 
 **Synchronized haptics and multi-sensory effects for YouTube on Android.**
 
-TriceraSync lets creators attach vibration, screen flash, brightness, torch, and volume cues to a YouTube video on a timeline, and an Android companion app triggers them on the viewer's phone in real-time while they watch in the **normal YouTube app**.
+TriceraSync connects physical effects — vibration, screen flash, display brightness dips, camera torch pulses, and audio volume ducking — to video playback on Android, triggering them in real-time while you watch in the **official YouTube app**.
 
-[**Open the Studio**](https://tricerasync.vercel.app) · [**Download the APK**](release/tricerasync-engine.apk) · [Try the demo](#try-the-demo) · [How it works](#how-it-works) · [Cue format](#the-cue-format-pcf-v1)
+[**Open Official Studio**](https://tricerasync.vercel.app) · [**Download Pre-built APK**](release/tricerasync-engine.apk) · [**Try Demo**](#try-the-demo) · [**Studio**](#tricerasync-studio-web) · [**Engine**](#tricerasync-engine-android) · [**Permissions**](#permissions-explained) · [**PCF v1 Spec**](pcf/SPECIFICATION.md)
 
-<sub>Named after the Triceratops — three horns, one head. Three horns became the mark; the head is your phone.</sub>
+<sub>Named after the Triceratops — three horns, one head. Three horns form the mark; the head is your phone.</sub>
 
 </div>
 
@@ -16,228 +16,252 @@ TriceraSync lets creators attach vibration, screen flash, brightness, torch, and
 
 ## What it is
 
-Most videos only give you sound and pixels. TriceraSync lets a creator attach physical feedback (vibrations, screen flashes, brightness dips, flashlight pulses, and audio volume ducking) to a YouTube video on a timeline, and an Android companion app triggers them on the viewer's phone in real-time while they watch inside the normal YouTube app.
+Most video content only provides pixels and sound. TriceraSync gives creators a physical dimension:
 
-Two halves:
+- **Haptics**: Precise one-shot buzzes, complex waveforms, and hardware-tuned haptic clicks.
+- **Screen flash**: Translucent color overlays synchronized with explosions, transitions, or beats.
+- **Brightness**: Dynamic display backlight dipping and rising.
+- **Torch**: Rear camera LED strobes and pulses.
+- **Volume ducking**: Dynamic audio level adjustments.
 
-|                                      |                                                                                                     |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| **Studio**: a web timeline editor    | Place cues against the finished video, preview them in the browser, and publish a version.          |
-| **Engine**: an Android companion app | Detects what is playing in YouTube, fetches the matching cue sheet, and fires the physical effects. |
+The repository includes both halves of the project:
+1. **TriceraSync Engine (`app/`)**: The open-source Android client that monitors YouTube playback via `MediaSessionManager`, extrapolates playhead timing within ~90 ms, and drives the hardware actuators.
+2. **TriceraSync Studio (`studio/`)**: A self-hostable web timeline editor for placing cues, previewing them in the browser, and publishing cue sheets. Runs locally with zero external database dependencies.
+3. **Physical Cue Format (PCF v1) (`pcf/`)**: The open standard specification and schema for synchronized physical cue sheets.
 
-**No video is ever uploaded.** The creator's file plays locally in their browser. Only timestamps and matching metadata reach the server.
+> **Hosted Service**: The official cloud deployment runs at **[tricerasync.vercel.app](https://tricerasync.vercel.app)**, operated by TraxDinosaur. The Engine connects to this hosted service by default, but can be freely pointed at any self-hosted Studio.
 
 ---
 
 ## How it works
 
-YouTube does not offer a direct broadcast when a video plays. Instead, TriceraSync uses Android's system `MediaSession` (the same service that displays playback controls in your notification bar).
+Android does not provide a direct broadcast event when a third-party app plays media. Instead, TriceraSync utilizes Android''s system `MediaSessionManager` (the framework service backing playback controls in the notification shade).
 
 ```mermaid
 flowchart LR
     A["YouTube app"] -->|publishes| B["MediaSession"]
     B -->|"title · channel · duration<br/>position · speed · updatedAt"| C["TriceraSync Engine<br/>(Notification Access)"]
-    C -->|"resolve by title + duration"| D[("Cue sheet<br/>Neon PostgreSQL")]
-    E["Studio<br/>(timeline editor)"] -->|publishes| D
+    C -->|"resolve by title + duration"| D[("Cue sheet<br/>Studio / API")]
+    E["Studio Editor<br/>(studio/)"] -->|publishes| D
     C -->|"25 ms scheduler"| F["Vibrate · Flash · Brightness<br/>Torch · Volume"]
 ```
 
-An app holding **Notification Access** can query active system `MediaSession` instances. YouTube's session exposes the video's title, channel name, and duration, plus a `PlaybackState` containing `position`, `playbackSpeed`, and `lastPositionUpdateTime`. Between updates, the current position is calculated in real time:
+When granted **Notification Access**, the Engine queries active system media sessions. YouTube''s session publishes playback state containing `position`, `playbackSpeed`, and `lastPositionUpdateTime`. Between OS updates, playback position is calculated in real time using monotonic clock math:
 
 ```
 pos(now) = position + (now - lastPositionUpdateTime) * speed     while playing
 pos(now) = position                                              otherwise
 ```
 
-Measured accurate to within ~90 ms on real devices. No root, no accessibility service, no screen capture, and notification text is never read.
+Sync accuracy is measured within **~90 ms** on physical hardware. This requires:
+- **No root**
+- **No accessibility services**
+- **No screen recording or capture**
+- **No notification text inspection** (text is never read)
 
-Because MediaSession does not include the raw YouTube video ID, videos are identified by normalized `(title, channel, duration +/- 1.5 s)`. Pre-roll ads report their own duration, so they are automatically ignored until the real video begins.
 
 ---
 
 ## Try the demo
 
-You need an Android phone and about 2-3 minutes.
+You can test TriceraSync right now on an Android phone in about 2 minutes:
 
 ### 1. Install the Engine
 
-**[Download tricerasync-engine.apk](release/tricerasync-engine.apk)** (7.6 MB, signed, package `com.tricerasync.engine`)
+**[Download tricerasync-engine.apk](release/tricerasync-engine.apk)** (7.6 MB signed release, or compile from source via `./gradlew :app:assembleDebug`).
 
 <details>
-<summary><b>Google Play Protect warning: Why it appears and how to install</b></summary>
+<summary><b>Installation & Permissions Note (Google Play Protect)</b></summary>
 
 <br>
 
-Because this is a direct sideloaded prototype requesting permissions to adjust screen brightness, display overlay flashes, and query media playback, **Google Play Protect flags it as an unverified app**.
+Because this is a direct sideloaded build requesting permissions to adjust display brightness, render overlay flashes, and query media session playback, **Google Play Protect may flag it as an unverified app**.
 
-**To install:** Tap **More details -> Install anyway**. If blocked by your device, open Play Store -> Profile -> _Play Protect_ -> Gear icon -> temporarily disable _Scan apps with Play Protect_, install, then turn it back on.
-
-**Permissions used:**
-
-| Permission                              | Why                                                                                                                     |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Notification access                     | Allows querying `MediaSession` to check what is playing and current playback position. Notification text is never read. |
-| Modify system settings                  | Controls screen brightness dips and restorations.                                                                       |
-| Display over other apps                 | Renders full-screen color flashes over the video.                                                                       |
-| Do Not Disturb access                   | Prevents volume adjustments from failing when DND mode is active.                                                       |
-| Notifications                           | Displays the foreground service notification while sync is running.                                                     |
-| Battery optimization exemption          | Prevents the OS from suspending the listener mid-video.                                                                 |
-| Vibrate / Internet / Foreground service | Triggers haptics, fetches cue sheets, and manages the sync session.                                                     |
-
-All hardware settings (brightness, volume, torch) are saved beforehand and restored as soon as playback ends or if the app closes. Uninstalling removes all data.
-
+**To install:** Tap **More details -> Install anyway**.
 </details>
 
-Open the app and grant the permissions shown. It connects to the live production server automatically.
+Open the app and grant the permissions shown on screen. By default, it connects automatically to the official hosted service.
 
-### 2. Play a demo video in YouTube
+### 2. Play a test video in the official YouTube app
 
-Two 11-second test clips with 4 cues each (uploaded under the project's earlier name — the titles are what the Engine matches on, so they stay as they are):
+Open the **official YouTube app** on your phone (not a web browser) and play either of these demo clips:
 
-| #     | Video                                                                 | What to watch for                                                    |
-| ----- | --------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **1** | [ParaSync Test Video 1](https://www.youtube.com/watch?v=0PBvTTpnTwI)  | `0.2s` buzz, `2.2s` red flash, `4.7s` screen dim, `5.2s` torch pulse |
-| **2** | [ParaSync Test Video 2](https://www.youtube.com/watch?v=NeKuwt94DTk)  | `0.5s` buzz, `2.1s` red flash, `3.5s` screen dim, `5.1s` torch pulse |
+| # | Video | What to watch & feel |
+|---|---|---|
+| **1** | [ParaSync Test Video 1](https://www.youtube.com/watch?v=0PBvTTpnTwI) | `0.2s` buzz, `2.2s` red flash, `4.7s` screen dim, `5.2s` torch pulse |
+| **2** | [ParaSync Test Video 2](https://www.youtube.com/watch?v=NeKuwt94DTk) | `0.5s` buzz, `2.1s` red flash, `3.5s` screen dim, `5.1s` torch pulse |
 
-Play either video in the **official YouTube app** (not a browser). TriceraSync changes status to **Synced** and triggers the effects as the video plays.
+TriceraSync displays status **Synced** and triggers physical effects in real time as the video plays.
 
-**Device Check** — a 31-second clip that walks through all five cue types with an on-screen countdown, so you can verify each effect on your own phone: [`docs/demo-videos/TriceraSync Device Check.mp4`](docs/demo-videos/TriceraSync%20Device%20Check.mp4)
+### 3. Verify hardware effects with the Device Check video
 
-| Time    | On screen        | Your phone                  |
-| ------- | ---------------- | --------------------------- |
-| `7.0s`  | Vibration · NOW  | buzzes                      |
-| `12.0s` | Flash · NOW      | screen flashes white        |
-| `17.0s` | Brightness · NOW | screen goes full bright     |
-| `22.0s` | Torch · NOW      | back torch on for ~1.5 s    |
-| `27.0s` | Volume · NOW     | the steady tone drops       |
+Run the included reference check video: [`docs/demo-videos/TriceraSync Device Check.mp4`](docs/demo-videos/TriceraSync%20Device%20Check.mp4)
 
-### 3. Open the Studio
+| Time | On screen | Your phone |
+|---|---|---|
+| `7.0s` | Vibration · NOW | Buzzes |
+| `12.0s` | Flash · NOW | Screen flashes white |
+| `17.0s` | Brightness · NOW | Screen goes full bright |
+| `22.0s` | Torch · NOW | Rear camera torch on for ~1.5 s |
+| `27.0s` | Volume · NOW | Steady audio tone drops |
 
-Visit **[tricerasync.vercel.app](https://tricerasync.vercel.app)** to view the web timeline editor where both sheets were authored. You can inspect the timeline, scrub with audio, and hit **Preview** to simulate the cues in your browser.
+### Identity and Matching
 
-> Browsing is open. Creating, saving and publishing need the deployment's access token, entered once at `/unlock`.
+Because `MediaSession` does not expose YouTube''s internal 11-character video ID, videos are matched via normalized signatures: `(title, channel, duration +/- 1.5 s)`. Because pre-roll advertisements publish their own separate duration, they resolve to separate identities and are ignored automatically until the real video starts.
 
 ---
 
-## The Studio
+## TriceraSync Studio (Web)
 
-### Landing and projects dashboard
+The Studio is located under `studio/` and runs with **zero external database dependencies** using a local file-based JSON store (`studio/.data/studio-store.json`).
 
-The landing shows the product in one screen — a live cue firing on a phone, the five cue types, and the three steps — followed by every authored cue sheet with its version, cue count and publishing status.
+### Run Studio Locally
+
+```bash
+cd studio
+bun install
+bun run dev
+```
+
+The Studio will start at `http://localhost:3000` (bound to `0.0.0.0` so devices on your LAN can connect).
+
+- **Create a project**: Enter a video name and link a YouTube URL (or upload a local file).
+- **Edit cues**: Place cues across the five tracks (Vibrate, Flash, Brightness, Torch, Volume).
+- **Preview**: Simulate effects directly in your browser.
+- **Publish**: Link the project to activate the cue sheet for the Engine to query.
+
+### Dashboard & Project Overview
+
+The landing dashboard shows active projects, cue sheet versions, cue counts, and publishing state:
 
 ![TriceraSync projects dashboard](docs/screenshots/dashboard.png)
 
 ### Multi-Track Timeline Editor
 
-Five tracks: Vibrate, Brightness, Volume, Flash, and Torch. Press `M` to place a cue at the playhead, drag to reposition, or drag edges to set hold durations. Snapping, audio scrubbing, and undo/redo are built in.
+Five dedicated lanes: Vibrate, Brightness, Volume, Flash, and Torch. Press `M` to drop cues, drag to position, and adjust durations with live browser simulation:
 
 ![TriceraSync timeline editor](docs/screenshots/editor.png)
 
-Each cue's timestamp anchors to the left edge of the marker, with duration expanding to the right.
+Each cue anchors to its starting timestamp, with duration expanding to the right:
 
 ![Five-lane timeline detail](docs/screenshots/timeline.png)
 
-### Start a project without uploading anything
+### Video Linking & Publishing
 
-Point the editor to your local video file (runs in-browser via blob URL, never uploaded) or paste an existing YouTube URL.
+Link your YouTube URL, confirm normalized signatures, and publish. The page provides a live resolve activity monitor to verify incoming phone requests in real time:
 
-![New project](docs/screenshots/new_project.png)
-
-### Publishing and live resolve activity
-
-Link your YouTube URL, confirm the match signature, and publish. The page then streams the resolve API live so you can see your phone's incoming requests and verify matches instantly.
+![New project modal](docs/screenshots/new_project.png)
 
 ![Publish and resolve activity](docs/screenshots/publish.png)
 
+
+For full Studio documentation, see [`studio/README.md`](studio/README.md) and [`studio/docs/API.md`](studio/docs/API.md).
+
 ---
 
-## The cue format (PCF v1)
+## TriceraSync Engine (Android)
 
-Stored as standard JSON documents and delivered directly to the Engine:
+### Prerequisites
 
-```jsonc
-{
-  "version": 1,
-  "video": { "provider": "youtube", "id": "0PBvTTpnTwI", "durationMs": 11000 },
-  "meta": { "sheetVersion": 1, "fps": 30 },
-  "defaults": { "restoreOnEnd": true, "toleranceMs": 120 },
-  "cues": [
-    {
-      "id": "c_a1",
-      "at": 210,
-      "type": "vibrate",
-      "params": { "mode": "oneShot", "durationMs": 200, "amplitude": 255 },
-    },
-    {
-      "id": "c_b2",
-      "at": 2204,
-      "type": "flash",
-      "params": {
-        "color": "#FF0000",
-        "opacity": 0.6,
-        "durationMs": 150,
-        "fadeOutMs": 150,
-      },
-    },
-  ],
-}
+- **JDK 17** (e.g. [Eclipse Adoptium Temurin 17](https://adoptium.net/))
+- **Android SDK** (API Level 35, Build Tools 35.0.0)
+- Set `ANDROID_HOME` in your environment (or create a `local.properties` file with `sdk.dir=/path/to/sdk`).
+
+### Build and Install
+
+Build debug APK:
+```bash
+./gradlew :app:assembleDebug
+```
+The output APK is generated at: `app/build/outputs/apk/debug/app-debug.apk`.
+
+Install via ADB:
+```bash
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-| Type         | Parameters                                                                                                                                     |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vibrate`    | `oneShot` (duration, amplitude 1-255), `waveform` (timings, amplitudes, repeat), `predefined` (`CLICK`, `DOUBLE_CLICK`, `HEAVY_CLICK`, `TICK`) |
-| `flash`      | `color` (`#RRGGBB`), `opacity` (0-1), `durationMs`, `fadeOutMs`                                                                                |
-| `brightness` | `level` (0-1), `rampMs`                                                                                                                        |
-| `torch`      | `on` (boolean), `durationMs`, `strength` (0-1)                                                                                                 |
-| `volume`     | `level` (0-1), `rampMs`                                                                                                                        |
+Run unit tests:
+```bash
+./gradlew :app:testDebugUnitTest
+```
 
-### Firing rules
+### Connect Engine to Your Self-Hosted Studio
 
-- **Instant cues** (`vibrate`, `flash`): Trigger once when the playhead crosses them, and never replay after seeking forward.
-- **State cues** (`brightness`, `volume`, `torch`): Persist until the next cue of that type or until hold expires. Seeking backward or forward automatically re-evaluates active state so levels never remain stuck.
-
-These rules exist across both the web studio preview and the Android engine to ensure browser previews match phone hardware execution.
-
----
-
-## Efficiency and battery
-
-The Engine keeps a local catalog of indexed videos. If your current video does not match any entry, it makes no server requests, runs no background sync session, and consumes no extra battery. During active playback, the scheduler ticks at 25 ms intervals and pauses immediately when playback is paused.
+1. **At Runtime (in the app)**:
+   - Open the Engine on your phone.
+   - Go to **Settings** -> edit **Base URL** to `http://<your-computer-ip>:3000`.
+   - Tap **Save**.
+2. **At Build Time**:
+   - You can bake your local server URL into the APK during build:
+     ```bash
+     ./gradlew :app:assembleDebug -Ptricerasync.server.url="http://192.168.1.50:3000"
+     ```
+   - Defaults to `https://tricerasync.vercel.app` if omitted.
 
 ---
 
-## Privacy and safety
+## Permissions Explained
 
-- **No media leaves your machine**: Video files run locally in the browser. The database stores only timestamps.
-- **Notification content is never read**: Notification Access is used strictly to read media session timing. Text, messages, and sender information are never accessed.
-- **No telemetry or tracking**: No user accounts, analytics, or third-party SDKs.
-- **Photosensitivity protection**: Flashes are capped at 3 per second and can be disabled in settings.
-- **State restoration**: Brightness and volume levels are restored to their previous values as soon as video playback ends.
+TriceraSync interacts with device hardware to deliver synchronized physical feedback:
 
----
-
-## Built with
-
-- **Studio**: Next.js 16 (App Router), React 19, Tailwind CSS v4, Zustand, Zod, Drizzle ORM, PostgreSQL on Neon, Vercel, Bun. Type is Bricolage Grotesque for display and Geist for UI; the palette is ember on warm black.
-- **Engine**: Kotlin 2.1, Jetpack Compose (Material 3), Coroutines, Android `MediaSessionManager`, `VibratorManager`, Camera2 API.
-
-Unit tests cover the cue schema, shared normalization vectors, timeline calculations, and scheduler behavior under seek, pause, drift, and clock skew.
-
----
-
-## Limitations
-
-- **Initial lookup delay**: On the very first play, fetching and caching the cue sheet from the database takes a split second. If the video has an effect in the opening moments, simply restart the video from 0:00 once the app catches the sheet to experience perfectly synchronized effects from start to finish.
-- **Device haptic hardware**: Vibration intensity and response times vary across devices depending on whether the phone has a standard rotary motor (ERM) or a haptic linear actuator (LRA).
+| Permission | Identifier | Why it is needed |
+|---|---|---|
+| **Notification access** | `BIND_NOTIFICATION_LISTENER_SERVICE` | Required to query `MediaSessionManager` for YouTube playback state and position. **Notification text and messages are never read.** |
+| **Modify system settings** | `WRITE_SETTINGS` | Controls display backlight brightness levels for brightness cues and restores original settings after playback. |
+| **Display over other apps** | `SYSTEM_ALERT_WINDOW` | Renders full-screen translucent color flashes directly over playing video. |
+| **Do Not Disturb access** | `ACCESS_NOTIFICATION_POLICY` | Ensures media volume adjustments do not fail when device is in Do Not Disturb mode. |
+| **Notifications** | `POST_NOTIFICATIONS` | Displays the persistent foreground service notification while active sync is running. |
+| **Battery optimization exemption** | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Prevents Android OS from suspending the listener loop during background playback or screen transitions. |
+| **Vibrate** | `VIBRATE` | Drives the device vibration motor (ERM/LRA) for haptic feedback. |
+| **Camera** | `CAMERA` | Controls the rear camera LED torch pulses via the Android Camera2 API. |
+| **Foreground Service / Internet** | `FOREGROUND_SERVICE`, `INTERNET` | Keeps the sync scheduler active during playback and retrieves cue sheets from the resolver API. |
 
 ---
 
-## Source
+## Privacy & Safety
 
-Studio and Engine live in this organisation: **[github.com/TraxDinosaur](https://github.com/TraxDinosaur)**. The Studio links back here from its header and footer.
+- **No video media is ever transmitted**: Cue sheets contain only timestamps and parameter values. Videos are annotated entirely client-side in the browser.
+- **Notification content is never read**: Notification Access is strictly used to interact with the system `MediaSessionManager` to read media playback state (title, channel, duration). Notification text, sender names, and message contents are never accessed or stored.
+- **Zero personal data collected**: The Engine and Studio contain zero analytics frameworks, advertising SDKs, or user tracking.
+- **Privacy-safe resolve activity logging**: When the Studio resolves cue sheets, it temporarily records video match signatures (`title`, `channel`, `durationMs`, matched sheet ID, match confidence, and timestamp) solely to power the creator live lookup dashboard. It stores **zero IP addresses, zero user agents, and zero device identifiers**. In self-hosted storage (`JsonFileStorage`), this log is capped strictly to the last 500 entries in FIFO order.
+- **Photosensitivity protection**: Visual flashes are capped at 3 per second to mitigate seizure risks, and flashing can be toggled off completely in Settings.
+- **Automatic state restoration**: Actuators capture baseline values (screen brightness, audio volume, torch state) before applying any cue and automatically restore them as soon as video playback ends, pauses, or the service stops.
+
+---
+
+## Repository Layout
+
+```
+.
+├── app/                  # Android Engine module (Kotlin 2.1 + Jetpack Compose)
+│   ├── src/main/java/    # Core logic, actuators, sync scheduler, UI
+│   ├── src/main/res/     # Compose resources, drawables, XML configs
+│   └── src/test/         # 24 unit tests (PCF parser, normalization, scheduler)
+├── studio/               # Self-hostable web timeline editor (Next.js 16, React 19)
+│   ├── src/              # Studio UI, timeline, inspector, storage interface
+│   ├── docs/             # HTTP API contract and storage adapter docs
+│   └── package.json      # Zero-database dependency configuration
+├── pcf/                  # Physical Cue Format (PCF v1) open specification
+│   ├── SPECIFICATION.md  # Format and timing specification
+│   ├── schema.json       # JSON Schema definition
+│   ├── schema.js         # Canonical JavaScript schema
+│   └── normalize-vectors.json # Cross-platform normalization test vectors
+├── docs/                 # Documentation assets, screenshots, and demo media
+│   ├── screenshots/      # UI screenshots
+│   └── demo-videos/      # Reference device check video
+├── build.gradle.kts      # Android root build configuration
+├── settings.gradle.kts   # Android project settings
+├── NOTICE                # Attribution notice
+├── LICENSE               # GNU General Public License v3.0 (GPLv3)
+└── CONTRIBUTING.md       # Contribution guidelines
+```
 
 ---
 
 ## License
 
-[**CC BY-SA 4.0**](LICENSE) © 2026 TraxDinosaur.
+- **Android Engine**: [GNU General Public License v3.0 or later (GPL-3.0-or-later)](LICENSE)
+- **Studio (Web Editor)**: [GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)](studio/LICENSE)
+- **Documentation, Specifications, and Media**: [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](docs/LICENSE)
+
+&copy; 2026 TraxDinosaur

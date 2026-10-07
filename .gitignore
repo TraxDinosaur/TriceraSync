@@ -1,11 +1,53 @@
-# Showcase repo: README, screenshots and the signed demo APK only.
-.DS_Store
-Thumbs.db
-*.log
+# Gradle
+.gradle/
+build/
+app/build/
+*.gradle.user.home/
 
-# Never publish credentials or build scratch here
+# Local configuration and machine-specific files
+local.properties
+.bundle/
+
+# Signing keys and credentials
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.key
+*.pem
+
+# Environment files and secrets
 .env
 .env.*
-*.keystore
-*.jks
-keystore.properties
+!.env.example
+
+# Android build outputs
+*.apk
+!release/*.apk
+*.aab
+*.ap_
+*.dex
+output.json
+
+# IDE and Editor files
+.idea/
+*.iml
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Kotlin
+.kotlin/
+.kotlin-daemon/
+
+# Logs
+*.log
+
+# Studio & Local Storage
+node_modules/
+.next/
+out/
+.data/
+*.json.tmp

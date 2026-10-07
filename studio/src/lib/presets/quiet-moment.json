@@ -1,0 +1,6 @@
+{
+  "id": "quiet-moment",
+  "name": "Quiet moment",
+  "description": "Volume ducks to 30 % with a 300 ms ramp; add a later Volume cue to bring it back.",
+  "cues": [{ "offsetMs": 0, "type": "volume", "params": { "level": 0.3, "rampMs": 300 } }]
+}

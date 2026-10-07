@@ -1,0 +1,23 @@
+{
+  "$comment": "Shared test vectors for title/channel normalization. Copy verbatim into the Engine repo (assets/normalize-vectors.json).",
+  "vectors": [
+    { "in": "My Insane Clutch", "out": "my insane clutch" },
+    { "in": "  Extra   spaces \t here  ", "out": "extra spaces here" },
+    { "in": "🔥 INSANE 1v4 CLUTCH!!! 🔥", "out": "insane 1v4 clutch" },
+    { "in": "Valorant - Ranked #12 (Full Match)", "out": "valorant ranked 12 full match" },
+    { "in": "ＦＵＬＬＷＩＤＴＨ ｔｅｘｔ", "out": "fullwidth text" },
+    { "in": "Café Résumé — naïve", "out": "café résumé naïve" },
+    { "in": "ﬁ ligature", "out": "fi ligature" },
+    { "in": "TraxDinosaur", "out": "traxdinosaur" },
+    { "in": "Channel Name - Topic", "out": "channel name topic" },
+    { "in": "GTA V | Part 3 | \"The Heist\"", "out": "gta v part 3 the heist" },
+    { "in": "हिंदी गेमप्ले 😄", "out": "हिंदी गेमप्ले" },
+    { "in": "日本語タイトル　全角スペース", "out": "日本語タイトル 全角スペース" },
+    { "in": "under_score-and.dots", "out": "underscoreanddots" },
+    { "in": "", "out": "" },
+    { "in": "   ", "out": "" },
+    { "in": "①②③ numbers", "out": "123 numbers" },
+    { "in": "Tabs\tand\nnewlines", "out": "tabs and newlines" },
+    { "in": "emoji👍between👍words", "out": "emojibetweenwords" }
+  ]
+}

@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* Dark-first editor palette (README/Design.md). Light mode is deliberately not a demo goal. */
+:root {
+  --bg: #0d0c0f;
+  --bg-elev: #151318;
+  --bg-elev-2: #1d1a21;
+  --border: #2b2730;
+  --fg: #ede9e6;
+  --fg-muted: #9a9299;
+  --accent: #ff6a2a;
+  --accent-fg: #1a0e08;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  /* cue lane colors — reused by the timeline + inspector */
+  --cue-vibrate: #f472b6;
+  --cue-brightness: #fbbf24;
+  --cue-volume: #60a5fa;
+  --cue-flash: #f87171;
+  --cue-torch: #a3e635;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-bg-elev-2: var(--bg-elev-2);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-cue-vibrate: var(--cue-vibrate);
+  --color-cue-brightness: var(--cue-brightness);
+  --color-cue-volume: var(--cue-volume);
+  --color-cue-flash: var(--cue-flash);
+  --color-cue-torch: var(--cue-torch);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* A single brand glow behind the page, so the dark UI has some depth without any per-page work. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    55rem 26rem at 50% -8rem,
+    color-mix(in oklab, var(--accent) 16%, transparent),
+    transparent 70%
+  );
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Landing hero: three ember "horn" streaks, echoing the mark, drawn with pure CSS. */
+.hero-horns {
+  background:
+    linear-gradient(100deg, transparent 58%, color-mix(in oklab, var(--accent) 22%, transparent) 58.2%, transparent 62%),
+    linear-gradient(100deg, transparent 66%, color-mix(in oklab, var(--accent) 34%, transparent) 66.2%, transparent 73%),
+    linear-gradient(100deg, transparent 77%, color-mix(in oklab, var(--accent) 18%, transparent) 77.2%, transparent 81%);
+}
+
+/* Phone mock: a slow "cue" pulse so the landing has a heartbeat without any JS. */
+@keyframes cue-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50% { transform: scale(1.35); opacity: 0; }
+}
+.cue-ring {
+  animation: cue-pulse 2.4s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cue-ring { animation: none; }
+}

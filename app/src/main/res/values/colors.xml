@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the web app background, so the launcher icon and the site read as one product. -->
+    <color name="ic_launcher_background">#0D0C0F</color>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Release builds are HTTPS-only. The app ships pointing at the hosted studio, so there is no
+  longer a reason to allow plain HTTP here — and an APK that permits cleartext is one more thing
+  for a scanner to hold against a side-loaded build.
+
+  Debug builds keep cleartext (see network_security_config.xml) so the Engine can still talk to a
+  dev server on the local network during development.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

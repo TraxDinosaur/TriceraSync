@@ -1,0 +1,28 @@
+{
+  "id": "explosion",
+  "name": "Explosion",
+  "description": "Heavy rumble, red flash, brightness spike.",
+  "cues": [
+    {
+      "offsetMs": 0,
+      "type": "vibrate",
+      "params": {
+        "mode": "waveform",
+        "timings": [0, 60, 40, 220],
+        "amplitudes": [0, 255, 120, 255],
+        "repeat": -1
+      }
+    },
+    {
+      "offsetMs": 0,
+      "type": "flash",
+      "params": { "color": "#FF3B00", "opacity": 0.7, "durationMs": 120, "fadeOutMs": 260 }
+    },
+    {
+      "offsetMs": 0,
+      "type": "brightness",
+      "durationMs": 350,
+      "params": { "level": 1, "rampMs": 0 }
+    }
+  ]
+}

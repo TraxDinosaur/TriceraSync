@@ -1,0 +1,8 @@
+{
+  "name": "tricerasync",
+  "private": true,
+  "workspaces": [
+    "studio",
+    "pcf"
+  ]
+}
